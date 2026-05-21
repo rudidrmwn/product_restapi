@@ -1,59 +1,324 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛍️ Products REST API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API untuk manajemen produk dibangun dengan **Laravel 12**, **PHP 8.2**, **MySQL 8.0**, dan **Nginx** menggunakan Docker.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Tech Stack](#tech-stack)
+- [Persyaratan](#persyaratan)
+- [Instalasi](#instalasi)
+- [Struktur Docker](#struktur-docker)
+- [Environment Variables](#environment-variables)
+- [API Endpoints](#api-endpoints)
+- [Autentikasi](#autentikasi)
+- [Rate Limiting](#rate-limiting)
+- [Caching](#caching)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🛠 Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| Komponen | Versi |
+|---|---|
+| PHP | 8.2 (FPM) |
+| Laravel | 12.x |
+| MySQL | 8.0 |
+| Nginx | Alpine |
+| Laravel Sanctum | Token-based Auth |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## ✅ Persyaratan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- [Docker](https://docs.docker.com/get-docker/) >= 24.x
+- [Docker Compose](https://docs.docker.com/compose/) >= 2.x
+- Git
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🚀 Instalasi
 
-## Contributing
+### 1. Clone repository
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+git clone https://github.com/rudidrmwn/product_restapi.git
+cd product_restapi
+```
 
-## Code of Conduct
+### 2. Salin file environment
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Sesuaikan nilai berikut di `.env`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=laravel_secret
+DB_ROOT_PASSWORD=root_secret
+```
 
-## License
+### 3. Build & jalankan semua container
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+docker compose up -d --build
+```
+
+### 4. Install dependencies Laravel
+
+```bash
+docker compose exec app composer install
+```
+
+### 5. Generate application key
+
+```bash
+docker compose exec app php artisan key:generate
+```
+
+### 6. Jalankan migration
+
+```bash
+docker compose exec app php artisan migrate
+```
+
+### 7. Akses aplikasi
+
+Buka browser di: **http://localhost:8080**
+
+---
+
+## 🐳 Struktur Docker
+
+```
+project-root/
+├── docker-compose.yml
+├── .env.example
+├── php/
+│   ├── Dockerfile        # PHP 8.2-FPM + extensions
+│   └── php.ini           # Konfigurasi PHP (timezone, upload limit, dll)
+└── nginx/
+    └── conf.d/
+        └── default.conf  # Konfigurasi Nginx untuk Laravel
+```
+
+### Container yang berjalan
+
+| Container | Deskripsi | Port |
+|---|---|---|
+| `laravel_app` | PHP 8.2-FPM | - |
+| `laravel_nginx` | Web server | `8080:80` |
+| `laravel_db` | MySQL 8.0 | `3306:3306` |
+
+### Perintah Docker berguna
+
+```bash
+# Lihat status container
+docker compose ps
+
+# Lihat log semua container
+docker compose logs -f
+
+# Lihat log container tertentu
+docker compose logs -f app
+
+# Masuk ke container PHP
+docker compose exec app bash
+
+# Masuk ke MySQL
+docker exec -it laravel_db mysql -u root -proot_secret
+
+# Stop semua container
+docker compose down
+
+# Stop & hapus volume (reset database)
+docker compose down -v
+```
+
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Default | Keterangan |
+|---|---|---|
+| `APP_NAME` | Laravel | Nama aplikasi |
+| `APP_ENV` | local | Environment (local/production) |
+| `APP_DEBUG` | true | Mode debug |
+| `DB_HOST` | db | Nama service MySQL di Docker |
+| `DB_DATABASE` | laravel | Nama database |
+| `DB_USERNAME` | laravel | Username database |
+| `DB_PASSWORD` | laravel_secret | Password database |
+| `DB_ROOT_PASSWORD` | root_secret | Password root MySQL |
+
+---
+
+## 📡 API Endpoints
+
+Base URL: `http://localhost:8080/api`
+
+### 🔐 Auth
+
+| Method | Endpoint | Deskripsi | Auth |
+|---|---|---|---|
+| POST | `/auth/register` | Registrasi user baru | ❌ |
+| POST | `/auth/login` | Login & dapatkan token | ❌ |
+| POST | `/auth/logout` | Logout & hapus token | ✅ |
+
+#### Register
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "supersecret",
+  "password_confirmation": "supersecret"
+}
+```
+
+#### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "supersecret"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": { ... },
+    "authentication_token": "1|abc123...",
+    "refresh_token": "2|xyz789..."
+  }
+}
+```
+
+---
+
+### 🛍️ Products
+
+| Method | Endpoint | Deskripsi | Auth |
+|---|---|---|---|
+| GET | `/products` | Ambil semua produk | ❌ |
+| GET | `/products/{id}` | Ambil detail produk | ❌ |
+| POST | `/products` | Tambah produk baru | ✅ |
+| PUT | `/products/{id}` | Update produk | ✅ |
+| DELETE | `/products/{id}` | Hapus produk | ✅ |
+
+#### GET /products — Query Parameters
+
+| Parameter | Contoh | Keterangan |
+|---|---|---|
+| `search` | `?search=shirt` | Cari berdasarkan nama produk |
+| `category` | `?category=Clothes` | Filter berdasarkan kategori |
+| `limit` | `?limit=10` | Jumlah item per halaman |
+| `page` | `?page=2` | Halaman yang ditampilkan |
+
+Contoh:
+```
+GET /api/products?search=shirt&category=Clothes&limit=10&page=1
+```
+
+#### POST /products
+
+```http
+POST /api/products
+Authorization: Bearer {authentication_token}
+Content-Type: application/json
+
+{
+  "title": "Awesome T-Shirt",
+  "price": 99.99,
+  "description": "High-quality cotton t-shirt",
+  "category": "Clothes",
+  "images": ["https://example.com/image.jpg"]
+}
+```
+
+---
+
+## 🔑 Autentikasi
+
+API ini menggunakan **Laravel Sanctum** (token-based).
+
+Setelah login, gunakan `authentication_token` di setiap request yang membutuhkan autentikasi:
+
+```http
+Authorization: Bearer 1|abc123xyzTOKEN
+```
+
+---
+
+## ⏱️ Rate Limiting
+
+| Endpoint | Batas | Per |
+|---|---|---|
+| `POST /auth/register` | 3 request | 60 detik |
+| `POST /auth/login` | 3 request | 60 detik |
+| `POST /products` | 1 request | 5 detik |
+| `PUT /products/{id}` | 1 request | 5 detik |
+| `DELETE /products/{id}` | 1 request | 5 detik |
+
+Jika melebihi batas, API mengembalikan:
+
+```json
+{
+  "success": false,
+  "message": "Too many requests. Please wait 5 seconds before trying again."
+}
+```
+
+---
+
+## 💾 Caching
+
+- Data produk di-cache selama **5 menit**
+- Cache otomatis di-invalidate saat ada operasi **create**, **update**, atau **delete**
+- Cache key berbasis query parameter sehingga setiap kombinasi filter tersimpan terpisah
+
+---
+
+## 📁 Struktur Project
+
+```
+app/
+├── Http/
+│   ├── Controllers/Api/
+│   │   ├── AuthController.php
+│   │   └── ProductController.php
+│   └── Requests/
+│       ├── Auth/
+│       │   ├── LoginRequest.php
+│       │   └── RegisterRequest.php
+│       └── Product/
+│           ├── StoreProductRequest.php
+│           └── UpdateProductRequest.php
+├── Models/
+│   ├── Product.php
+│   └── User.php
+routes/
+└── api.php
+database/
+└── migrations/
+```
+
+---
+
+## 👤 Author
+
+**Rudi** — [github.com/rudidrmwn](https://github.com/rudidrmwn)

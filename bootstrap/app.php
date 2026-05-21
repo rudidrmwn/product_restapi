@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->booted(function () {
         // Rate limiter: product write endpoints — max 1 hit per 5 seconds per user
         RateLimiter::for('product-write', function (Request $request) {
-            return Limit::perSeconds(5, 1)
+            return Limit::perSecond(1)
                 ->by($request->user()?->id ?: $request->ip())
                 ->response(function () {
                     return response()->json([
